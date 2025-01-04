@@ -48,20 +48,4 @@ public class ProductController {
         return this.service.getProductByRange(a, b);
     }
 
-    @PostMapping
-    public String saveProduct(@RequestBody Product product) {
-        this.service.saveProduct(product);
-        return "Product added successfully";
-    }
-
-    @PutMapping({"/{id}"})
-    public String updateProduct(@RequestBody Product product, @PathVariable Integer id) {
-        this.service.updateProduct(product, id);
-        return "Product updated successfully";
-    }
-
-    @DeleteMapping({"/{id}"})
-    public Optional<Product> deleteProduct(@PathVariable Integer id) {
-        return this.service.deleteProduct(id);
-    }
 }

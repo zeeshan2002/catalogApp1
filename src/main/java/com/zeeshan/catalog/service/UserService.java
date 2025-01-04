@@ -6,13 +6,12 @@ import com.zeeshan.catalog.model.Users;
 import com.zeeshan.catalog.repository.ProductRepo;
 import com.zeeshan.catalog.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,50 +22,40 @@ public class UserService {
     private ProductService productService;
     @Autowired
     private ProductRepo productRepo;
+    @Autowired
+    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+
 
     public List<Users> getAllUsers() {
         return this.userRepo.findAll();
     }
 
     @Transactional
-    public UserDTO getUserWithProducts(String username) {
+    public List<Product> getUserWithProducts(String username) {
         Users user = userRepo.getUserByUsername(username);
-        return user != null ? new UserDTO(user.getUsername(), user.getProducts().stream().map(Product::toString).collect(Collectors.toList())) : new UserDTO();
+//        return user != null ? user.getProducts(): null;
+        return user.getProducts();
     }
 
     @Transactional
     public void saveUser(Users user) {
-        user.setRoles(Collections.singletonList("USER"));
+        user.setRoles(Arrays.asList("USER"));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         this.userRepo.save(user);
     }
 
     @Transactional
-    public Optional<Users> deleteUser(Integer id) {
-        Optional<Users> users = this.userRepo.findById(id);
-        if (users.isPresent()) {
-            users.get().getProducts().clear();
-            this.userRepo.save(users.get());
-            this.userRepo.deleteById(id);
-            return users;
-        } else {
-            return Optional.empty();
-        }
+    public Optional<Users> deleteUser(String username) {
+        Users users = userRepo.getUserByUsername(username);
+        Integer id = users.getId();
+        users.getProducts().clear();
+        this.userRepo.save(users);
+        this.userRepo.deleteById(id);
+        return Optional.of(users);
     }
 
     @Transactional
-    public void saveProduct(Product product, String username) {
-        Users user = this.userRepo.getUserByUsername(username);
-        this.productService.saveProduct(product);
-        List<Product> productList = user.getProducts();
-        productList.add(product);
-        this.userRepo.save(user);
-    }
-
-    public List<Product> getAllProductsOfUser(String username) {
-        Users user = this.userRepo.getUserByUsername(username);
-        return user.getProducts();
-    }
-
     public Product saveProductById(String username, Integer prodId){
         Product product = productRepo.findById(prodId).get();
         Users user = userRepo.getUserByUsername(username);
@@ -76,5 +65,26 @@ public class UserService {
         userRepo.save(user);
         return product;
     }
+
+    @Transactional
+    public void updateUser(String username, Users newUser) {
+        Users oldUser = userRepo.getUserByUsername(username);
+        oldUser.setUsername(newUser.getUsername());
+        oldUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        userRepo.save(oldUser);
+    }
 }
 
+//@Transactional
+//    public void saveProduct(Product product, String username) {
+//        Users user = this.userRepo.getUserByUsername(username);
+//        this.productService.saveProduct(product);
+//        List<Product> productList = user.getProducts();
+//        productList.add(product);
+//        this.userRepo.save(user);
+//    }
+
+//    public List<Product> getAllProductsOfUser(String username) {
+//        Users user = this.userRepo.getUserByUsername(username);
+//        return user.getProducts();
+//    }

@@ -39,6 +39,12 @@ public class ProductService {
         return this.repo.getProductByCategory(category);
     }
 
+    public List<Product> getProductByRange(Float a, Float b) {
+        List<Product> products = this.repo.getProductByRange(a, b);
+        return products;
+    }
+
+
     public void saveProduct(Product product) {
         this.repo.save(product);
     }
@@ -58,9 +64,6 @@ public class ProductService {
         return product;
     }
 
-    public List<Product> getProductByRange(Float a, Float b) {
-        List<Product> products = this.repo.getProductByRange(a, b);
-        return products;
-    }
+
 }
 
