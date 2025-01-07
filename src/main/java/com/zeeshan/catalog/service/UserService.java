@@ -32,6 +32,13 @@ public class UserService {
     }
 
     @Transactional
+    public void saveAdmin(Users user) {
+        user.setRoles(Arrays.asList("USER", "ADMIN"));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        this.userRepo.save(user);
+    }
+
+    @Transactional
     public List<Product> getUserWithProducts(String username) {
         Users user = userRepo.getUserByUsername(username);
 //        return user != null ? user.getProducts(): null;
